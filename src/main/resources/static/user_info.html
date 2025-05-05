@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Kullanıcı Bilgisi</title>
+</head>
+<body>
+<h2>Kişisel Bilgilerinizi Girin</h2>
+<form action="/api/user-info" method="post">
+    <label>Adınız:</label><br>
+    <input type="text" name="name" required><br><br>
+
+    <label>Yaşınız:</label><br>
+    <input type="number" name="age" required><br><br>
+
+    <label>Bulunduğunuz Şehir:</label><br>
+    <input type="text" name="location" required><br><br>
+
+    <label>Bulunduğunuz Kat:</label><br>
+    <select name="floorType" required>
+        <option value="zemin">Zemin Kat</option>
+        <option value="üst">Üst Kat</option>
+    </select><br><br>
+
+    <button type="submit">Kaydet</button>
+</form>
+</body>
+</html>
