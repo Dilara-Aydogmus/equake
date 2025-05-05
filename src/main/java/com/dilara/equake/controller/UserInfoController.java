@@ -34,4 +34,10 @@ public class UserInfoController {
         // Tavsiyeyi gösterecek sayfaya yönlendir
         return "advice"; // src/main/resources/templates/advice.html varsa
     }
+
+    @GetMapping("/")
+    public String showUserInfoForm() {
+        return "user_info"; // templates/user_info.html dosyasını göster
+    }
+
 }

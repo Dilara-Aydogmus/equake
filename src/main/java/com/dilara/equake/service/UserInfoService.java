@@ -14,4 +14,8 @@ public class UserInfoService {
     public UserInfo save(UserInfo info) {
         return repo.save(info);
     }
+
+    public UserInfo findLatest() {
+        return repo.findTopByOrderByIdDesc(); // Son girilen kaydı getir
+    }
 }

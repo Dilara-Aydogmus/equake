@@ -1,28 +1,35 @@
 package com.dilara.equake.controller;
 
 import com.dilara.equake.model.AnomalyData;
-import com.dilara.equake.repository.AnomalyDataRepository;
+import com.dilara.equake.model.UserInfo;
 import com.dilara.equake.service.AnomalyService;
-import org.json.JSONArray;
+import com.dilara.equake.service.UserInfoService;
+import com.dilara.equake.service.AdviceService;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.PostMapping;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-@RestController
-@RequestMapping("/api/vibration")
+@Controller
 public class VibrationController {
 
     @Autowired
     private AnomalyService anomalyService;
 
-    @PostMapping("/analyze")
-    public ResponseEntity<String> analyzeData() {
+    @Autowired
+    private UserInfoService userInfoService;
+
+    @Autowired
+    private AdviceService adviceService;
+
+    @PostMapping("/api/vibration/analyze")
+    public String analyzeData(Model model) {
         StringBuilder output = new StringBuilder();
 
         try {
@@ -37,11 +44,10 @@ public class VibrationController {
 
                 if (line.startsWith("{")) {
                     JSONObject json = new JSONObject(line);
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
                     AnomalyData data = new AnomalyData();
-                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
                     data.setTimestamp(LocalDateTime.parse(json.getString("timestamp"), formatter));
-
                     data.setVibrationX(json.getDouble("vibration_x"));
                     data.setVibrationY(json.getDouble("vibration_y"));
                     data.setVibrationZ(json.getDouble("vibration_z"));
@@ -52,14 +58,21 @@ public class VibrationController {
                 }
             }
 
-            int exitCode = process.waitFor();
-            output.append("Process exited with code ").append(exitCode);
+            process.waitFor();
+
+            // Kullanıcı bilgilerini al
+            UserInfo user = userInfoService.findLatest();
+
+            // Tavsiye al
+            String advice = adviceService.getPersonalizedAdvice(user.getAge(), user.getLocation(), user.getFloorType());
+
+            // Thymeleaf'e gönder
+            model.addAttribute("advice", advice);
 
         } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(500).body("Hata oluştu: " + e.getMessage());
+            model.addAttribute("advice", "Bir hata oluştu: " + e.getMessage());
         }
 
-        return ResponseEntity.ok("Python çıktı:\n" + output);
+        return "analyze"; // templates/analyze.html
     }
 }

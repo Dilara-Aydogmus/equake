@@ -1,5 +1,6 @@
 package com.dilara.equake.service;
 
+import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
@@ -39,4 +40,16 @@ public class AdviceService {
             return "{\"error\":\"Tavsiyeye erişilemedi\"}";
         }
     }
+
+    public String extractAdviceOnly(int age, String location, String floorType) {
+        try {
+            String jsonResponse = getPersonalizedAdvice(age, location, floorType);
+            JSONObject json = new JSONObject(jsonResponse);
+            return json.optString("advice", "Tavsiye bulunamadı.");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "Tavsiye alınırken hata oluştu.";
+        }
+    }
+
 }
