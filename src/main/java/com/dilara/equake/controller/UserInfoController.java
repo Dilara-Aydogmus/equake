@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Controller
 public class UserInfoController {
@@ -21,19 +23,24 @@ public class UserInfoController {
     public String saveUserInfo(@ModelAttribute UserInfo userInfo, Model model) {
         service.save(userInfo);
 
-        // Yapay zekadan kişisel öneri al
         String jsonAdvice = adviceService.getPersonalizedAdvice(
                 userInfo.getAge(),
                 userInfo.getLocation(),
                 userInfo.getFloorType()
         );
 
-        // Tavsiyeyi modele ekle
-        model.addAttribute("advice", jsonAdvice);
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode node = mapper.readTree(jsonAdvice);
+            String plainAdvice = node.get("advice").asText();
+            model.addAttribute("advice", plainAdvice);
+        } catch (Exception e) {
+            model.addAttribute("advice", "Tavsiye alınamadı: " + e.getMessage());
+        }
 
-        // Tavsiyeyi gösterecek sayfaya yönlendir
-        return "advice"; // src/main/resources/templates/advice.html varsa
+        return "advice";
     }
+
 
     @GetMapping("/")
     public String showUserInfoForm() {
