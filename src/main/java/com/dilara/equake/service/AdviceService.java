@@ -52,4 +52,30 @@ public class AdviceService {
         }
     }
 
+    public String getMLBasedAdvice(int age, String location, String floorType) {
+        try {
+            ProcessBuilder pb = new ProcessBuilder(
+                    "python", "src/main/python/predict_advice.py",
+                    String.valueOf(age), location, floorType
+            );
+            pb.redirectErrorStream(true);
+
+            Process process = pb.start();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            StringBuilder output = new StringBuilder();
+            String line;
+
+            while ((line = reader.readLine()) != null) {
+                output.append(line);
+            }
+
+            process.waitFor();
+            return output.toString(); // JSON string {"advice": "..."}
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "{\"error\":\"ML tabanlı tavsiye alınamadı\"}";
+        }
+    }
+
+
 }
